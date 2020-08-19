@@ -34,9 +34,10 @@ var port string
 var name string
 
 func init() {
+	port = os.Getenv("PORT")
 	flag.StringVar(&cert, "cert", "", "give me a certificate")
 	flag.StringVar(&key, "key", "", "give me a key")
-	flag.StringVar(&port, "port", "80", "give me a port number")
+	// flag.StringVar(&port, "port", "80", "give me a port number")
 	flag.StringVar(&name, "name", os.Getenv("WHOAMI_NAME"), "give me a name")
 }
 
@@ -146,9 +147,24 @@ func whoamiHandler(w http.ResponseWriter, req *http.Request) {
 	wait := u.Query().Get("wait")
 	if len(wait) > 0 {
 		duration, err := time.ParseDuration(wait)
+		finished := false
+		go func() {
+			for {
+				if !finished {
+					_, _ = fmt.Fprintf(w, "%s\n", time.Now())
+					if flusher, ok := w.(http.Flusher); ok {
+						flusher.Flush()
+					}
+
+					time.Sleep(1 * time.Second)
+				}
+			}
+		}()
 		if err == nil {
 			time.Sleep(duration)
 		}
+
+		finished = true
 	}
 
 	if name != "" {
