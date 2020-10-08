@@ -1,5 +1,8 @@
 FROM golang:1-alpine as builder
 
+ENV UID 2000
+RUN adduser --uid $UID --disabled-password user
+
 RUN apk --no-cache --no-progress add git ca-certificates tzdata make \
     && update-ca-certificates \
     && rm -rf /var/cache/apk/*
@@ -21,6 +24,8 @@ FROM scratch
 COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /go/whoami/whoami .
+COPY --from=builder /etc/passwd /etc/passwd
 
+USER $UID
 ENTRYPOINT ["/whoami"]
 EXPOSE 80
