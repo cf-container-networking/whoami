@@ -27,4 +27,4 @@ COPY --from=builder /etc/passwd /etc/passwd
 
 USER 2000
 ENTRYPOINT ["/whoami"]
-EXPOSE 80
+EXPOSE 8080
